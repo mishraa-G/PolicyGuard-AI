@@ -9,10 +9,12 @@ from typing import Dict, Any, List
 from src.graph.state import PolicyGuardState
 from src.vectorstore.qdrant_store import QdrantHybridStore
 from src.sql_engine.rules_engine import DeterministicRulesEngine
+from src.llm.gemini_client import GeminiComplianceClient
 from src.config import settings
 
 qdrant_store = QdrantHybridStore()
 rules_engine = DeterministicRulesEngine()
+gemini_client = GeminiComplianceClient()
 
 TIER1_CITIES = {"new york", "nyc", "san francisco", "sf", "tokyo", "london", "singapore", "paris"}
 
@@ -217,8 +219,25 @@ def node_synthesize_compliance(state: PolicyGuardState) -> Dict[str, Any]:
     summary = "Compliant with standard enterprise operating procedures."
     reasoning = f"Inquiry conforms to established guidelines ({citations[0] if citations else 'Corporate SOP'})."
 
-    # Absolute ethical and statutory prohibitions override standard thresholds
-    if "cash" in query_lower and any(k in query_lower for k in ["gift", "card", "client", "vendor"]):
+    # 1. Neural LLM Synthesis via Google Gemini (if enabled)
+    gemini_res = None
+    if settings.llm_provider == "gemini" and gemini_client.is_available():
+        gemini_res = gemini_client.generate_compliance_verdict(
+            query=query,
+            retrieved_chunks=retrieved_chunks,
+            sql_verification=sql_res,
+            sql_rules=state.get("sql_rules", [])
+        )
+
+    if gemini_res:
+        verdict = gemini_res.get("verdict", verdict)
+        summary = gemini_res.get("summary", summary)
+        reasoning = gemini_res.get("detailed_reasoning", reasoning)
+        if gemini_res.get("citations"):
+            citations = gemini_res["citations"]
+
+    # 2. Deterministic rule-based synthesizer fallback / offline engine
+    elif "cash" in query_lower and any(k in query_lower for k in ["gift", "card", "client", "vendor"]):
         verdict = "VIOLATION"
         summary = "Absolute Prohibition: Cash and cash equivalents are strictly prohibited."
         reasoning = "Cash gifts are strictly forbidden under ETH-POL-001 regardless of nominal amount."

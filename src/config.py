@@ -10,8 +10,14 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 class Settings(BaseModel):
-    # LLM Settings
-    llm_provider: str = Field(default_factory=lambda: os.getenv("LLM_PROVIDER", "mock"))
+    # LLM Settings (Supports: 'mock', 'gemini', 'openai')
+    llm_provider: str = Field(default_factory=lambda: os.getenv("LLM_PROVIDER", "gemini" if os.getenv("GEMINI_API_KEY") else "mock"))
+    
+    # Gemini Configuration
+    gemini_api_key: str = Field(default_factory=lambda: os.getenv("GEMINI_API_KEY", os.getenv("GOOGLE_API_KEY", "")))
+    gemini_model: str = Field(default_factory=lambda: os.getenv("GEMINI_MODEL", "gemini-1.5-flash"))
+
+    # OpenAI Configuration
     openai_api_key: str = Field(default_factory=lambda: os.getenv("OPENAI_API_KEY", ""))
     llm_model: str = Field(default_factory=lambda: os.getenv("LLM_MODEL", "gpt-4o-mini"))
     embedding_model: str = Field(default_factory=lambda: os.getenv("EMBEDDING_MODEL", "text-embedding-3-small"))

@@ -18,6 +18,25 @@ gemini_client = GeminiComplianceClient()
 
 TIER1_CITIES = {"new york", "nyc", "san francisco", "sf", "tokyo", "london", "singapore", "paris"}
 
+def extract_financial_amount(text_lower: str) -> Optional[float]:
+    """Robustly extracts financial numbers across natural currency phrasing:
+    $100, 100$, 100 USD, 100 dollars, 100 bucks, Rs 100, or bare numbers like 'expense 100'.
+    """
+    m_curr = re.search(r"(\$|rs\.?|inr|eur|usd|gbp)\s*([0-9,]+(?:\.[0-9]+)?)|([0-9,]+(?:\.[0-9]+)?)\s*(\$|usd|dollars?|bucks?|inr|rs\.?|rupees?|eur|euros?|pounds?)", text_lower)
+    if m_curr:
+        val_str = m_curr.group(2) or m_curr.group(3)
+        return float(val_str.replace(",", ""))
+
+    # Standalone number tied to financial / contract actions
+    keywords = ["expense", "spent", "claim", "cost", "pay", "bill", "contract", "worth", "purchase", "order", "bids", "agreement", "stipend", "ceiling"]
+    if any(k in text_lower for k in keywords):
+        m_num = re.search(r"\b([0-9]{1,3}(?:,[0-9]{3})+(?:\.[0-9]+)?|[0-9]+(?:\.[0-9]+)?)\b", text_lower)
+        if m_num:
+            val = float(m_num.group(1).replace(",", ""))
+            if not re.search(r"\b" + str(int(val)) + r"\s*(hours?|hrs?|days?|weeks?|years?)\b", text_lower):
+                return val
+    return None
+
 def node_analyze_and_route(state: PolicyGuardState) -> Dict[str, Any]:
     """Analyzes the user query, extracts compliance entities, and determines the routing path."""
     t0 = time.perf_counter()
@@ -28,10 +47,10 @@ def node_analyze_and_route(state: PolicyGuardState) -> Dict[str, Any]:
     intent = "GENERAL_COMPLIANCE"
     category = None
 
-    # Detect dollar / currency amounts: $100, 100$, 100 USD, 100 dollars
-    amt_match = re.search(r"\$\s*([0-9,]+(?:\.[0-9]{2})?)|([0-9,]+(?:\.[0-9]{2})?)\s*(?:\$|usd|dollars?)", query_lower)
-    if amt_match:
-        entities["amount"] = float((amt_match.group(1) or amt_match.group(2)).replace(",", ""))
+    # Detect financial amounts
+    amt = extract_financial_amount(query_lower)
+    if amt is not None:
+        entities["amount"] = amt
 
     # Detect hour durations (e.g. 48 hours, 72 hours, 7-hour)
     hrs_match = re.search(r"([0-9]+)\s*(?:-hour|hours|hrs|hour)", query_lower)

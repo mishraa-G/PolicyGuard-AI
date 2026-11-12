@@ -151,8 +151,8 @@ pytest tests/ -v
 
 ### 8. Start the FastAPI Server
 ```bash
-uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
-# Access Interactive Swagger UI at: http://localhost:8000/docs
+uvicorn src.api.app:app --host 0.0.0.0 --port 8001 --reload
+# Access Interactive Swagger UI at: http://localhost:8001/docs
 ```
 
 ---

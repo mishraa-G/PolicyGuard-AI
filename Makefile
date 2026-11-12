@@ -27,7 +27,7 @@ test:
 	.venv/bin/pytest tests/ -v
 
 api:
-	.venv/bin/uvicorn src.api.app:app --host 0.0.0.0 --port 8000 --reload
+	.venv/bin/uvicorn src.api.app:app --host 0.0.0.0 --port 8001 --reload
 
 demo:
 	.venv/bin/python main.py

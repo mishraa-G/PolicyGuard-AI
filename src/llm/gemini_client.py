@@ -73,40 +73,44 @@ Authoritative Policy Context (Top Retrieved Sections):
 Provide your structured compliance verdict in raw JSON:
 """
 
-        url = GEMINI_API_ENDPOINT.format(model=self.model) + f"?key={self.api_key}"
-        payload = {
-            "contents": [
-                {
-                    "role": "user",
-                    "parts": [{"text": prompt_text}]
+        models_to_try = [self.model, "gemini-2.5-flash-lite"] if self.model != "gemini-2.5-flash-lite" else [self.model]
+
+        for model_name in models_to_try:
+            url = GEMINI_API_ENDPOINT.format(model=model_name) + f"?key={self.api_key}"
+            payload = {
+                "contents": [
+                    {
+                        "role": "user",
+                        "parts": [{"text": prompt_text}]
+                    }
+                ],
+                "systemInstruction": {
+                    "parts": [{"text": SYSTEM_INSTRUCTION}]
+                },
+                "generationConfig": {
+                    "temperature": 0.1,
+                    "responseMimeType": "application/json"
                 }
-            ],
-            "systemInstruction": {
-                "parts": [{"text": SYSTEM_INSTRUCTION}]
-            },
-            "generationConfig": {
-                "temperature": 0.1,
-                "responseMimeType": "application/json"
             }
-        }
 
-        try:
-            with httpx.Client(timeout=self.timeout) as client:
-                resp = client.post(url, json=payload)
-                if resp.status_code != 200:
-                    return None
+            try:
+                with httpx.Client(timeout=self.timeout) as client:
+                    resp = client.post(url, json=payload)
+                    if resp.status_code != 200:
+                        continue
 
-                data = resp.json()
-                candidate_text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
+                    data = resp.json()
+                    candidate_text = data["candidates"][0]["content"]["parts"][0]["text"].strip()
 
-                # Clean markdown wrapper if present
-                clean_json = re.sub(r"^```json\s*|\s*```$", "", candidate_text, flags=re.MULTILINE).strip()
-                parsed = json.loads(clean_json)
+                    # Clean markdown wrapper if present
+                    clean_json = re.sub(r"^```json\s*|\s*```$", "", candidate_text, flags=re.MULTILINE).strip()
+                    parsed = json.loads(clean_json)
 
-                # Ensure required keys exist
-                if "verdict" in parsed and "detailed_reasoning" in parsed:
-                    return parsed
-        except Exception:
-            return None
+                    # Ensure required keys exist
+                    if "verdict" in parsed and "detailed_reasoning" in parsed:
+                        return parsed
+            except Exception:
+                continue
 
         return None
+

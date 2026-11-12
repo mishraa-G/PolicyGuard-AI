@@ -28,10 +28,10 @@ def node_analyze_and_route(state: PolicyGuardState) -> Dict[str, Any]:
     intent = "GENERAL_COMPLIANCE"
     category = None
 
-    # Detect dollar amounts
-    amt_match = re.search(r"\$\s*([0-9,]+(?:\.[0-9]{2})?)", query)
+    # Detect dollar / currency amounts: $100, 100$, 100 USD, 100 dollars
+    amt_match = re.search(r"\$\s*([0-9,]+(?:\.[0-9]{2})?)|([0-9,]+(?:\.[0-9]{2})?)\s*(?:\$|usd|dollars?)", query_lower)
     if amt_match:
-        entities["amount"] = float(amt_match.group(1).replace(",", ""))
+        entities["amount"] = float((amt_match.group(1) or amt_match.group(2)).replace(",", ""))
 
     # Detect hour durations (e.g. 48 hours, 72 hours, 7-hour)
     hrs_match = re.search(r"([0-9]+)\s*(?:-hour|hours|hrs|hour)", query_lower)

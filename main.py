@@ -13,7 +13,7 @@ from src.config import settings
 
 console = Console()
 
-BANNER = """[bold cyan]
+BANNER = r"""[bold cyan]
   ____       _ _            ____                 _ 
  |  _ \ ___ | (_) ___ _   _/ ___|_   _  __ _ _ __| |
  | |_) / _ \| | |/ __| | | | |  _| | | |/ _` | '__| |

@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "policyguard-ai"
+version = "1.0.0"
+description = "Enterprise Compliance RAG Accelerator using LangGraph, Qdrant, and Deterministic SQL Guardrails"
+readme = "README.md"
+authors = [{ name = "Divyansh Mishra" }]
+requires-python = ">=3.10"
+dependencies = [
+    "langgraph>=0.2.0",
+    "langchain-core>=0.3.0",
+    "qdrant-client>=1.9.0",
+    "pydantic>=2.7.0",
+    "fastapi>=0.110.0",
+    "uvicorn>=0.29.0",
+    "rich>=13.7.0",
+    "tabulate>=0.9.0",
+    "python-dotenv>=1.0.0",
+    "numpy>=1.26.0",
+    "pytest>=8.0.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+pythonpath = ["."]

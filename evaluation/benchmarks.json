@@ -1,0 +1,453 @@
+[
+  {
+    "test_id": "TC-TRV-001",
+    "category": "travel_expense",
+    "query": "Can an employee claim an $80 dinner in Chicago if they provide an itemized receipt?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "TRV-POL-001",
+    "ground_truth_facts": ["$85 daily meal cap for standard cities", "itemized receipts required for spend exceeding $25"],
+    "edge_case_type": "standard"
+  },
+  {
+    "test_id": "TC-TRV-002",
+    "category": "travel_expense",
+    "query": "Can an employee claim an $95 dinner in Austin without manager escalation?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "TRV-POL-001",
+    "ground_truth_facts": ["$85 daily meal limit in standard cities", "over-limit spend requires manager/director approval"],
+    "edge_case_type": "boundary_limit"
+  },
+  {
+    "test_id": "TC-TRV-003",
+    "category": "travel_expense",
+    "query": "Can I expense a $110 dinner in New York City with an itemized receipt?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "TRV-POL-001",
+    "ground_truth_facts": ["Tier-1 high cost cities allow up to $120/day", "NYC is designated Tier-1 metro"],
+    "edge_case_type": "tier_distinction"
+  },
+  {
+    "test_id": "TC-TRV-004",
+    "category": "travel_expense",
+    "query": "Can I expense a $45 lunch without an itemized receipt?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "TRV-POL-006",
+    "ground_truth_facts": ["Itemized receipts mandatory for expenses exceeding $25.00"],
+    "edge_case_type": "missing_receipt"
+  },
+  {
+    "test_id": "TC-TRV-005",
+    "category": "travel_expense",
+    "query": "Can I book business class for a 7-hour direct flight from New York to London?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "TRV-POL-002",
+    "ground_truth_facts": ["International flights exceeding 6 continuous hours qualify for Business Class"],
+    "edge_case_type": "standard"
+  },
+  {
+    "test_id": "TC-TRV-006",
+    "category": "travel_expense",
+    "query": "Can I book business class for a 4-hour flight from Chicago to San Francisco?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "TRV-POL-002",
+    "ground_truth_facts": ["Domestic flights must be booked in Economy class regardless of duration"],
+    "edge_case_type": "domestic_vs_international"
+  },
+  {
+    "test_id": "TC-TRV-007",
+    "category": "travel_expense",
+    "query": "Can I expense a $320 hotel room in Dallas without Director signoff?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "TRV-POL-003",
+    "ground_truth_facts": ["Standard domestic hotel ceiling is $250/night before taxes"],
+    "edge_case_type": "boundary_limit"
+  },
+  {
+    "test_id": "TC-TRV-008",
+    "category": "travel_expense",
+    "query": "Can I expense a $350 hotel room in Tokyo during a business conference?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "TRV-POL-003",
+    "ground_truth_facts": ["Tier-1 metropolitan lodging ceiling is $375/night", "Tokyo is Tier-1"],
+    "edge_case_type": "tier_distinction"
+  },
+  {
+    "test_id": "TC-TRV-009",
+    "category": "travel_expense",
+    "query": "My department VP gave verbal approval to expense a $180 solo dinner. Is this approved?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "TRV-POL-001",
+    "ground_truth_facts": ["Verbal waivers are impermissible", "formal written ERF required for exceptions"],
+    "edge_case_type": "adversarial_verbal_waiver"
+  },
+  {
+    "test_id": "TC-TRV-010",
+    "category": "travel_expense",
+    "query": "Can I expense mini-bar alcoholic beverages and personal grooming from my hotel bill?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "TRV-POL-010",
+    "ground_truth_facts": ["Mini-bar and personal grooming are strictly non-reimbursable expenses"],
+    "edge_case_type": "prohibited_items"
+  },
+  {
+    "test_id": "TC-INF-011",
+    "category": "infosec",
+    "query": "What is the mandatory retention timeline for customer transactional audit logs under SOX and SOC 2?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "INF-POL-001",
+    "ground_truth_facts": ["Audit logs and compliance records must be retained for exactly 7 years"],
+    "edge_case_type": "statutory_retention"
+  },
+  {
+    "test_id": "TC-INF-012",
+    "category": "infosec",
+    "query": "Can we purge transactional compliance audit logs after 3 years to save S3 storage costs?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "INF-POL-001",
+    "ground_truth_facts": ["Mandatory retention is 7 years", "premature archival or deletion violates statutory standards"],
+    "edge_case_type": "regulatory_violation"
+  },
+  {
+    "test_id": "TC-INF-013",
+    "category": "infosec",
+    "query": "Can a critical CVSS 9.8 remote code execution vulnerability be patched in 72 hours?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "INF-POL-003",
+    "ground_truth_facts": ["Critical vulnerabilities (CVSS 9.0+) must be remediated or mitigated within 48 hours"],
+    "edge_case_type": "sla_violation"
+  },
+  {
+    "test_id": "TC-INF-014",
+    "category": "infosec",
+    "query": "Does a 36-hour remediation plan for a Critical SQL injection vulnerability meet the SLA?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "INF-POL-003",
+    "ground_truth_facts": ["Critical SLA ceiling is 48 hours", "36 hours satisfies the requirement"],
+    "edge_case_type": "sla_compliance"
+  },
+  {
+    "test_id": "TC-INF-015",
+    "category": "infosec",
+    "query": "Can high severity vulnerabilities (CVSS 8.2) be addressed within 14 days?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "INF-POL-003",
+    "ground_truth_facts": ["High severity vulnerabilities have a 14-day SLA standard"],
+    "edge_case_type": "standard"
+  },
+  {
+    "test_id": "TC-INF-016",
+    "category": "infosec",
+    "query": "What is the maximum statutory timeline for notifying regulatory authorities under GDPR Article 33 following a personal data breach?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "INF-POL-006",
+    "ground_truth_facts": ["Statutory breach notice window is 72 hours for GDPR"],
+    "edge_case_type": "regulatory_statutory"
+  },
+  {
+    "test_id": "TC-INF-017",
+    "category": "infosec",
+    "query": "Can a security team wait 5 days before notifying the CISO and Legal of a confirmed active customer database breach?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "INF-POL-006",
+    "ground_truth_facts": ["Material incidents must be escalated to CISO and Legal within 4 hours"],
+    "edge_case_type": "escalation_sla"
+  },
+  {
+    "test_id": "TC-INF-018",
+    "category": "infosec",
+    "query": "Is RSA-1024 permitted for customer data-in-transit encryption?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "INF-POL-002",
+    "ground_truth_facts": ["Asymmetric keys must utilize minimum RSA-3072 or ECC-384 bit curves"],
+    "edge_case_type": "cryptographic_standard"
+  },
+  {
+    "test_id": "TC-INF-019",
+    "category": "infosec",
+    "query": "Does an IAM account remaining inactive for 45 days stay enabled?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "INF-POL-009",
+    "ground_truth_facts": ["IAM accounts inactive for more than 30 consecutive days must be automatically disabled"],
+    "edge_case_type": "access_control"
+  },
+  {
+    "test_id": "TC-INF-020",
+    "category": "infosec",
+    "query": "Can an engineer disable full-disk encryption on their laptop if working from home?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "INF-POL-007",
+    "ground_truth_facts": ["All portable devices must enforce full disk encryption (BitLocker/FileVault)"],
+    "edge_case_type": "mandatory_control"
+  },
+  {
+    "test_id": "TC-PRO-021",
+    "category": "procurement",
+    "query": "Can an Engineering Manager execute a $4,500 software subscription agreement without Director approval?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "PRO-POL-001",
+    "ground_truth_facts": ["Contracts up to $5,000 require Manager signoff"],
+    "edge_case_type": "signing_authority"
+  },
+  {
+    "test_id": "TC-PRO-022",
+    "category": "procurement",
+    "query": "Can a Manager approve a $15,000 cloud vendor contract on their own?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "PRO-POL-001",
+    "ground_truth_facts": ["Contracts between $5,001 and $25,000 require Director approval and 3 competitive bids"],
+    "edge_case_type": "approval_ceiling"
+  },
+  {
+    "test_id": "TC-PRO-023",
+    "category": "procurement",
+    "query": "Does an $85,000 analytics software contract require a formal RFP with 3 competitive bids?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "PRO-POL-002",
+    "ground_truth_facts": ["Procurement exceeding $50,000 mandates formal RFP with at least 3 competitive bids"],
+    "edge_case_type": "rfp_mandate"
+  },
+  {
+    "test_id": "TC-PRO-024",
+    "category": "procurement",
+    "query": "Can a team sole-source a $120,000 software contract without CFO and VP signoff?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "PRO-POL-003",
+    "ground_truth_facts": ["Sole-source exceptions require joint signoff from VP Sourcing and CFO"],
+    "edge_case_type": "sole_source_waiver"
+  },
+  {
+    "test_id": "TC-PRO-025",
+    "category": "procurement",
+    "query": "What are the standard payment terms for enterprise procurement purchase orders?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "PRO-POL-005",
+    "ground_truth_facts": ["Standard corporate purchase terms are Net 60 days"],
+    "edge_case_type": "standard"
+  },
+  {
+    "test_id": "TC-PRO-026",
+    "category": "procurement",
+    "query": "Can an emergency purchase of $40,000 be authorized to restore a down production server?",
+    "ground_truth_verdict": "CONDITIONAL_APPROVAL",
+    "expected_policy_id": "PRO-POL-006",
+    "ground_truth_facts": ["Emergency spend up to $50,000 authorized with post-hoc ratification within 5 business days"],
+    "edge_case_type": "emergency_protocol"
+  },
+  {
+    "test_id": "TC-PRO-027",
+    "category": "procurement",
+    "query": "Can an independent contractor work continuously for 24 months without a break-in-service?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "PRO-POL-009",
+    "ground_truth_facts": ["Independent contractors cannot exceed 18 months continuous tenure without a 6-month break"],
+    "edge_case_type": "contingent_worker_limit"
+  },
+  {
+    "test_id": "TC-PRO-028",
+    "category": "procurement",
+    "query": "Can an employee charge a $3,500 server purchase to their corporate P-Card?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "PRO-POL-010",
+    "ground_truth_facts": ["Corporate P-Cards have a strict per-transaction ceiling of $2,500; capital equipment is blocked"],
+    "edge_case_type": "pcard_ceiling"
+  },
+  {
+    "test_id": "TC-HRC-029",
+    "category": "hr_compliance",
+    "query": "What is the maximum one-time equipment stipend for newly hired remote employees?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "HRC-POL-001",
+    "ground_truth_facts": ["One-time home office equipment stipend of $1,000 and monthly internet subsidy of $75"],
+    "edge_case_type": "remote_stipend"
+  },
+  {
+    "test_id": "TC-HRC-030",
+    "category": "hr_compliance",
+    "query": "Can a remote employee receive a $2,500 home office furniture allowance?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "HRC-POL-001",
+    "ground_truth_facts": ["Home office equipment stipend is strictly capped at $1,000"],
+    "edge_case_type": "boundary_limit"
+  },
+  {
+    "test_id": "TC-HRC-031",
+    "category": "hr_compliance",
+    "query": "How many weeks of paid parental leave are primary and secondary caregivers entitled to?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "HRC-POL-002",
+    "ground_truth_facts": ["16 consecutive weeks of 100% paid parental leave after 6 months continuous service"],
+    "edge_case_type": "benefits_entitlement"
+  },
+  {
+    "test_id": "TC-HRC-032",
+    "category": "hr_compliance",
+    "query": "Can a full-time software engineer take an outside consulting gig without notifying the company?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "HRC-POL-003",
+    "ground_truth_facts": ["Outside business activities and moonlighting require prior written approval from Legal & Ethics"],
+    "edge_case_type": "moonlighting"
+  },
+  {
+    "test_id": "TC-HRC-033",
+    "category": "hr_compliance",
+    "query": "What is the required initiation timeframe for investigating formal workplace harassment complaints?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "HRC-POL-004",
+    "ground_truth_facts": ["Formal harassment complaints must trigger formal investigation within 48 hours"],
+    "edge_case_type": "investigation_sla"
+  },
+  {
+    "test_id": "TC-HRC-034",
+    "category": "hr_compliance",
+    "query": "Can an employee carry forward 25 unused PTO days into the following calendar year?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "HRC-POL-008",
+    "ground_truth_facts": ["Maximum of 10 unused PTO days may be carried forward; surplus expires Dec 31"],
+    "edge_case_type": "pto_carryover_cap"
+  },
+  {
+    "test_id": "TC-HRC-035",
+    "category": "hr_compliance",
+    "query": "How many paid days of bereavement leave are granted for the loss of an immediate family member?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "HRC-POL-006",
+    "ground_truth_facts": ["Up to 5 consecutive paid days off for immediate family bereavement"],
+    "edge_case_type": "standard"
+  },
+  {
+    "test_id": "TC-ETH-036",
+    "category": "code_of_conduct",
+    "query": "Can an employee accept an $80 gift basket from a software vendor during the holidays?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "ETH-POL-001",
+    "ground_truth_facts": ["Employees may accept non-cash gifts up to $100 in cumulative annual value"],
+    "edge_case_type": "gift_threshold"
+  },
+  {
+    "test_id": "TC-ETH-037",
+    "category": "code_of_conduct",
+    "query": "Can a procurement specialist accept a $250 luxury watch from an RFP bidder?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "ETH-POL-001",
+    "ground_truth_facts": ["Gift acceptance is strictly capped at $100 per vendor/year; gifts from active RFP bidders prohibited"],
+    "edge_case_type": "ethics_breach"
+  },
+  {
+    "test_id": "TC-ETH-038",
+    "category": "code_of_conduct",
+    "query": "Can an employee accept a $50 cash gift card from a satisfied client?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "ETH-POL-001",
+    "ground_truth_facts": ["Cash and cash equivalents are strictly prohibited regardless of amount"],
+    "edge_case_type": "cash_gift_prohibition"
+  },
+  {
+    "test_id": "TC-ETH-039",
+    "category": "code_of_conduct",
+    "query": "Can a manager offer a $200 facilitation payment to speed up customs clearance in a foreign port?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "ETH-POL-002",
+    "ground_truth_facts": ["Strict prohibition on facilitation payments or bribes under FCPA and UK Bribery Act"],
+    "edge_case_type": "fcpa_anti_bribery"
+  },
+  {
+    "test_id": "TC-ETH-040",
+    "category": "code_of_conduct",
+    "query": "When does the quarterly insider trading blackout window begin for covered employees?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "ETH-POL-003",
+    "ground_truth_facts": ["Blackout windows start 2 weeks prior to quarter-end until 48 hours post-earnings release"],
+    "edge_case_type": "insider_trading"
+  },
+  {
+    "test_id": "TC-ETH-041",
+    "category": "code_of_conduct",
+    "query": "Can an employee trade company shares 3 days before the quarterly earnings announcement?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "ETH-POL-003",
+    "ground_truth_facts": ["Trading is strictly prohibited during the 2-week pre-quarter-end blackout window"],
+    "edge_case_type": "blackout_violation"
+  },
+  {
+    "test_id": "TC-ETH-042",
+    "category": "code_of_conduct",
+    "query": "What protections are afforded to an employee who submits a good-faith report to the whistleblower hotline?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "ETH-POL-004",
+    "ground_truth_facts": ["Anonymous 24/7 hotline with zero-retaliation guarantee; retaliation results in immediate termination"],
+    "edge_case_type": "whistleblower_protection"
+  },
+  {
+    "test_id": "TC-EDGE-043",
+    "category": "travel_expense",
+    "query": "I am traveling to London (Tier-1) and spent $118 on dinner with an itemized receipt. Is this allowable?",
+    "ground_truth_verdict": "APPROVED",
+    "expected_policy_id": "TRV-POL-001",
+    "ground_truth_facts": ["London is designated Tier-1 metro with allowable meal cap of $120/day"],
+    "edge_case_type": "near_boundary_pass"
+  },
+  {
+    "test_id": "TC-EDGE-044",
+    "category": "travel_expense",
+    "query": "I am traveling to London (Tier-1) and spent $122 on dinner with an itemized receipt. Is this allowable without director approval?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "TRV-POL-001",
+    "ground_truth_facts": ["Amount $122 exceeds $120 Tier-1 cap; requires managerial escalation"],
+    "edge_case_type": "near_boundary_fail"
+  },
+  {
+    "test_id": "TC-EDGE-045",
+    "category": "procurement",
+    "query": "Can a team split a $60,000 vendor engagement into twelve $5,000 purchase orders to avoid Director and RFP approvals?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "PRO-POL-001",
+    "ground_truth_facts": ["Artificial restructuring or splitting of purchase orders to circumvent signing thresholds is strictly prohibited"],
+    "edge_case_type": "adversarial_structuring"
+  },
+  {
+    "test_id": "TC-EDGE-046",
+    "category": "infosec",
+    "query": "Can we store plaintext customer passwords in an internal Redis cache for performance optimization?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "INF-POL-002",
+    "ground_truth_facts": ["All credentials and sensitive customer data must be encrypted with salted one-way hashing or AES-256"],
+    "edge_case_type": "insecure_architecture"
+  },
+  {
+    "test_id": "TC-EDGE-047",
+    "category": "code_of_conduct",
+    "query": "A vendor offers to pay for an employee's $5,000 first-class flight to a private resort for 'networking'. Can this be accepted?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "ETH-POL-001",
+    "ground_truth_facts": ["Lavish hospitality, private resorts, and vendor-paid travel exceeding $100 constitute improper inducement"],
+    "edge_case_type": "bribery_attempt"
+  },
+  {
+    "test_id": "TC-EDGE-048",
+    "category": "hr_compliance",
+    "query": "Can an employee with 3 months of tenure claim 16 weeks of paid parental leave?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "HRC-POL-002",
+    "ground_truth_facts": ["Paid parental leave requires minimum 6 months continuous service"],
+    "edge_case_type": "tenure_boundary"
+  },
+  {
+    "test_id": "TC-EDGE-049",
+    "category": "infosec",
+    "query": "Can an employee share customer PII via unencrypted personal Google Drive to finish work over the weekend?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "INF-POL-005",
+    "ground_truth_facts": ["Confidential customer data strictly prohibited from unauthorized personal cloud storage; requires enterprise encryption"],
+    "edge_case_type": "data_leakage"
+  },
+  {
+    "test_id": "TC-EDGE-050",
+    "category": "travel_expense",
+    "query": "Can an employee submit an expense report 45 days after trip completion without explanation?",
+    "ground_truth_verdict": "VIOLATION",
+    "expected_policy_id": "TRV-POL-006",
+    "ground_truth_facts": ["Expense reconciliation artifacts must be submitted within 14 calendar days of transaction completion"],
+    "edge_case_type": "submission_deadline"
+  }
+]
+

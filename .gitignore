@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# Local Interview & Personal Guides (Never push to remote)
+INTERVIEW_PREP.md
+*interview*.md
+*interview_guide*.md
+*guide*.md
+
+# Environment Variables & Secrets
+.env
+*.env.local
+
+# Qdrant local storage
+qdrant_storage/
+*.qdrant
+
+# SQLite Databases & Cache
+*.sqlite3-journal
+data/generated_cache/
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Test & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+

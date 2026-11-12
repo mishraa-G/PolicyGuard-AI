@@ -1,0 +1,12 @@
+{
+  "total_requests_profiled": 60,
+  "mean_latency_ms": 6.78,
+  "p50_latency_ms": 6.79,
+  "p90_latency_ms": 7.07,
+  "p95_latency_ms": 7.33,
+  "p99_latency_ms": 31.51,
+  "min_latency_ms": 1.69,
+  "max_latency_ms": 31.51,
+  "sla_target_ms": 800.0,
+  "sla_met": true
+}

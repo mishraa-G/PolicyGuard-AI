@@ -12,7 +12,14 @@ from src.sql_engine.rules_engine import DeterministicRulesEngine
 from src.llm.gemini_client import GeminiComplianceClient
 from src.config import settings
 
-qdrant_store = QdrantHybridStore()
+class _QdrantStoreProxy:
+    _instance = None
+    def __getattr__(self, name):
+        if _QdrantStoreProxy._instance is None:
+            _QdrantStoreProxy._instance = QdrantHybridStore()
+        return getattr(_QdrantStoreProxy._instance, name)
+
+qdrant_store = _QdrantStoreProxy()
 rules_engine = DeterministicRulesEngine()
 gemini_client = GeminiComplianceClient()
 
@@ -103,14 +110,15 @@ def node_analyze_and_route(state: PolicyGuardState) -> Dict[str, Any]:
     elif any(k in query_lower for k in ["vulnerability", "cvss", "cve", "breach", "ciso", "patch", "retention", "crypto", "encryption", "mfa", "password", "audit log", "iam", "disk encryption", "pii"]):
         intent = "INFOSEC_SLA"
         category = "infosec"
-        if "critical" in query_lower or "9." in query_lower:
+        if "breach" in query_lower or "incident" in query_lower:
+            if any(r in query_lower for r in ["regulatory", "regulator", "gdpr", "sec", "government", "authority"]):
+                entities["sla_name"] = "data_breach_regulatory_notice"
+            else:
+                entities["sla_name"] = "data_breach_ciso_escalation"
+        elif "critical" in query_lower or "9." in query_lower:
             entities["sla_name"] = "critical_vuln_remediation"
         elif "high" in query_lower or "8." in query_lower:
             entities["sla_name"] = "high_vuln_remediation"
-        elif "breach" in query_lower and "regulatory" in query_lower:
-            entities["sla_name"] = "data_breach_regulatory_notice"
-        elif "breach" in query_lower:
-            entities["sla_name"] = "data_breach_ciso_escalation"
         elif "retention" in query_lower or "audit log" in query_lower:
             entities["rule_type"] = "audit_retention"
 
@@ -273,7 +281,7 @@ def node_synthesize_compliance(state: PolicyGuardState) -> Dict[str, Any]:
     elif sql_res.get("evaluated"):
         if not sql_res.get("compliant"):
             verdict = "VIOLATION"
-            violations = sql_res.get("violations", [])
+            violations = list(sql_res.get("violations", []))
             if sql_res.get("violation"):
                 violations.append(sql_res["violation"])
             summary = "Compliance Violation: The requested transaction exceeds authorized enterprise limits."
@@ -532,20 +540,27 @@ def node_validate_guardrail(state: PolicyGuardState) -> Dict[str, Any]:
 
     if sql_res.get("evaluated"):
         if not sql_res.get("compliant") and verdict == "APPROVED":
+            violations = list(sql_res.get("violations", []))
+            if sql_res.get("violation"):
+                violations.append(sql_res["violation"])
             hallucination_flags.append(
-                f"Hallucination Override: Model synthesized 'APPROVED' despite deterministic violation: {sql_res.get('violations')}"
+                f"Hallucination Override: Model synthesized 'APPROVED' despite deterministic violation: {violations}"
             )
             verdict = "VIOLATION"
             corrected = True
-            reasoning = f"[GUARDRAIL CORRECTION APPLIED]\nDeterministic rule strictly overrides model inference:\n" + "\n".join(sql_res.get("violations", []))
+            reasoning = f"[GUARDRAIL CORRECTION APPLIED]\nDeterministic rule strictly overrides model inference:\n" + "\n".join(violations)
 
         elif sql_res.get("compliant") and verdict == "VIOLATION":
-            hallucination_flags.append(
-                "Hallucination Override: Model synthesized 'VIOLATION' but amount conforms to allowable cap."
-            )
-            verdict = "APPROVED"
-            corrected = True
-            reasoning = f"[GUARDRAIL CORRECTION APPLIED]\nDeterministic checks confirm claim is compliant within ${sql_res.get('allowable_cap')} cap."
+            # Only override if this was a purely quantitative spending check where amount <= cap
+            # and there is an allowable cap and receipts were provided.
+            if sql_res.get("allowable_cap") is not None and state.get("extracted_entities", {}).get("has_receipt", True):
+                if state.get("intent_type") == "EXPENSE":
+                    hallucination_flags.append(
+                        "Hallucination Override: Model synthesized 'VIOLATION' but amount conforms to allowable cap."
+                    )
+                    verdict = "APPROVED"
+                    corrected = True
+                    reasoning = f"[GUARDRAIL CORRECTION APPLIED]\nDeterministic checks confirm claim is compliant within ${sql_res.get('allowable_cap')} cap."
 
     elapsed_ms = (time.perf_counter() - t0) * 1000.0
     latencies = dict(state.get("latency_breakdown_ms", {}))

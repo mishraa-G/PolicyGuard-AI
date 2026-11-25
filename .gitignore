@@ -31,6 +31,9 @@ INTERVIEW_PREP.md
 *interview*.md
 *interview_guide*.md
 *guide*.md
+*.pdf
+PolicyGuard_Interview_Mastery_Guide.pdf
+assets/
 
 # Environment Variables & Secrets
 .env

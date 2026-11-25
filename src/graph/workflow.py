@@ -15,12 +15,12 @@ from src.graph.nodes import (
     node_validate_guardrail
 )
 
-def route_decision(state: PolicyGuardState) -> str:
-    """Conditional edge router based on extracted query intent."""
+def qdrant_next_step(state: PolicyGuardState) -> str:
+    """Conditional edge router after retrieval: bypasses SQL for purely qualitative inquiries."""
     route = state.get("route", "HYBRID")
     if route == "SEMANTIC":
-        return "retrieve_qdrant"
-    return "hybrid_path"
+        return "synthesize_compliance"
+    return "evaluate_sql"
 
 def create_policyguard_graph():
     """Constructs and compiles the PolicyGuard LangGraph state machine."""
@@ -35,19 +35,20 @@ def create_policyguard_graph():
 
     # Connect nodes
     workflow.add_edge(START, "analyze_and_route")
+    workflow.add_edge("analyze_and_route", "retrieve_qdrant")
 
-    # Routing branch
+    # Dynamic branch after retrieval:
+    # If purely qualitative (SEMANTIC), skip SQL evaluation and go straight to synthesis.
+    # If quantitative (HYBRID), execute SQL deterministic check.
     workflow.add_conditional_edges(
-        "analyze_and_route",
-        route_decision,
+        "retrieve_qdrant",
+        qdrant_next_step,
         {
-            "retrieve_qdrant": "retrieve_qdrant",
-            "hybrid_path": "retrieve_qdrant"
+            "synthesize_compliance": "synthesize_compliance",
+            "evaluate_sql": "evaluate_sql"
         }
     )
 
-    # In hybrid mode, retrieve_qdrant transitions to evaluate_sql
-    workflow.add_edge("retrieve_qdrant", "evaluate_sql")
     workflow.add_edge("evaluate_sql", "synthesize_compliance")
     workflow.add_edge("synthesize_compliance", "validate_guardrail")
     workflow.add_edge("validate_guardrail", END)

@@ -143,7 +143,15 @@ def node_analyze_and_route(state: PolicyGuardState) -> Dict[str, Any]:
             entities["expense_type"] = "pcard_single_tx"
 
     entities["category"] = category
-    route = "HYBRID"
+    has_numerical = (
+        "amount" in entities
+        or "hours" in entities
+        or "days" in entities
+        or "contract_amount" in entities
+        or "sla_name" in entities
+        or "expense_type" in entities
+    )
+    route = "HYBRID" if has_numerical else "SEMANTIC"
 
     elapsed_ms = (time.perf_counter() - t0) * 1000.0
 
